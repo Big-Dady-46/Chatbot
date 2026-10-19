@@ -125,12 +125,48 @@
   }
 
   // =========================================================================
-  // Intelligent Multilingual Reasoning Engine (English Responses Only)
+  // Intelligent Multilingual Reasoning Engine for AddizTech (addiztech.com)
   // Evaluated in strict priority order for 100% precision and zero false-matches
   // =========================================================================
 
   const DYNAMIC_DOMAINS = [
-    // 1. Urgent / Next-Day / Same-Day Flight Booking (Top Priority for travel)
+    // 1. About AddizTech / Who are you
+    {
+      patterns: [
+        /\b(addiztech|addiz tech|about your company|who are you|about you|company info|addiz)\b/i,
+        /(?:addiztech|addiz).*(?:kya hai|kya karti hai|kon hai)/i
+      ],
+      variants: [
+        "AddizTech is a premier digital marketing and web development agency in Pakistan with over 18 years of experience and 13,000+ completed projects worldwide. We specialize in high-converting websites, e-commerce stores, SEO, and branding. If you want to grow your business online, we can design and build a stunning website for you today!",
+        "AddizTech IT Solutions is an award-winning full-service digital agency. We deliver measurable business growth through custom web development, digital marketing, and creative design. Visit https://addiztech.com/contact-us/ to get a custom proposal for your next website!"
+      ]
+    },
+
+    // 2. AddizTech Services (Web Development, SEO, Digital Marketing, Branding)
+    {
+      patterns: [
+        /\b(service|services|web development|web design|wordpress|shopify|react|seo|digital marketing|branding|graphic design|logo design|ui\/ux|website banwani|site banani)\b/i,
+        /(?:kya karte ho|kya offer|services|kaam|what do you do|what services|our services)\b/i
+      ],
+      variants: [
+        "AddizTech provides end-to-end digital services including custom Web Development (WordPress, Shopify, React/Next.js), SEO & Digital Marketing, and Brand Identity Design. We can build and launch a high-performing website tailored to your business—visit https://addiztech.com/contact-us/ to get started!",
+        "Our core expertise covers responsive web development, e-commerce stores (Shopify & WooCommerce), search engine optimization (SEO), and complete branding. If you need a website that drives real sales, let AddizTech develop it for you!"
+      ]
+    },
+
+    // 3. AddizTech Contact, Hiring & Portfolio
+    {
+      patterns: [
+        /\b(contact|hire|quote|project|rabta|email|phone|website|portfolio|call us|reach out)\b/i,
+        /(?:kaise contact karein|rabta kaise karein|contact details)/i
+      ],
+      variants: [
+        "You can connect directly with the AddizTech team through our official contact page at https://addiztech.com/contact-us/ or view our active portfolio at https://addiztech.com/portfolio/. Whether you need a brand-new website or a redesign, our team is ready to craft the perfect digital solution for you.",
+        "To get a custom quote or discuss your website project, visit https://addiztech.com/contact-us/ to submit your inquiry. Our experts will get back to you promptly with a tailored proposal to scale your business."
+      ]
+    },
+
+    // 4. Urgent / Next-Day / Same-Day Flight Booking (General helpful knowledge + website pitch)
     {
       patterns: [
         /(?=.*(flight|plane|ticket|jahaz|airline))(?=.*(kal|tomorrow|aj|today|urgent|last[- ]minute|emergency|subah|sham)).*/i,
@@ -139,12 +175,12 @@
         /(flight|plane|ticket|jahaz).*aj.*book.*kal/i
       ],
       variants: [
-        "If you book a flight today for travel tomorrow, tickets are usually available on airlines like PIA, Airblue, and Fly Jinnah, though fares will be higher due to last-minute demand. It is best to visit the airline's official website or mobile app immediately, reserve remaining seats, and complete online check-in right away.",
-        "Booking a flight today for departure tomorrow is completely possible on domestic carriers, but seats sell fast and cost more. We recommend checking direct airline portals (PIA, Airblue, or Fly Jinnah) right now to grab available seats and verify your baggage allowance."
+        "If you book a flight today for travel tomorrow, tickets are usually available on airlines like PIA, Airblue, and Fly Jinnah, though fares will be higher due to last-minute demand. By the way, if you run a travel agency or commercial business, AddizTech can build you a custom, fast-loading booking website to automate your client sales!",
+        "Booking a flight today for departure tomorrow is completely possible on domestic carriers, but seats sell fast and cost more. By the way, if you want an automated booking system or website for your enterprise, AddizTech can design and develop one for you!"
       ]
     },
 
-    // 2. Route-Specific Domestic Flight Pricing (Karachi - Islamabad, Lahore - Karachi, etc.)
+    // 5. Route-Specific Domestic Flight Pricing (Karachi - Islamabad, etc.)
     {
       patterns: [
         /(?=.*(flight|plane|ticket|jahaz|airfare))(?=.*(karachi|khi))(?=.*(islamabad|isb)).*/i,
@@ -152,24 +188,12 @@
         /(?=.*(flight|plane|ticket|jahaz|airline))(?=.*(price|kiraya|fare|rate|cost|kitne)).*/i
       ],
       variants: [
-        "Domestic one-way flight tickets between major cities like Karachi and Islamabad generally cost between PKR 18,000 and PKR 35,000 depending on how early you book. Budget carriers like Fly Jinnah and Airblue often provide the most affordable rates.",
-        "Flight fares between Karachi and Islamabad vary based on the season and carrier; booking at least 1 to 2 weeks in advance on Fly Jinnah or Airblue typically secures the most economical rates."
+        "Domestic one-way flight tickets between major cities like Karachi and Islamabad generally cost between PKR 18,000 and PKR 35,000 depending on advance booking. By the way, whatever industry you operate in, having a high-converting website by AddizTech will help you attract more clients effortlessly!",
+        "Flight fares between Karachi and Islamabad vary based on the season and carrier lead time. By the way, if you're looking to establish or upgrade your business online, AddizTech can design and develop a modern website for you!"
       ]
     },
 
-    // 3. General Flight & Airline Booking
-    {
-      patterns: [
-        /(?:book.*(?:flight|plane|ticket|jahaz))|(?:(?:flight|plane|ticket|jahaz).*book)/i,
-        /\b(flight|airline|air travel|pia|airblue|fly jinnah|sastaticket)\b/i
-      ],
-      variants: [
-        "To book domestic or international flights, you can reserve tickets through official airline websites (such as PIA, Airblue, or Fly Jinnah) or travel portals like Sastaticket. Booking 1 to 2 weeks in advance usually gives you the lowest fares.",
-        "You can book airline tickets directly on official carrier portals. Have your government ID or passport ready at checkout to complete the reservation and receive your e-ticket instantly."
-      ]
-    },
-
-    // 4. Offline / Physical Markets for Hardware & Keyboards
+    // 6. Offline / Physical Markets for Hardware & Keyboards
     {
       patterns: [
         /(?=.*(offl?i?ne|physical|bazar|market|plaza|walk[- ]in))(?=.*(keyboard|mouse|laptop|computer|pc|hardware|parts|accessories|ram|ssd)).*/i,
@@ -177,24 +201,24 @@
         /(?:offl?i?ne|physical).*(?:market|shop|store|bazar|hub)/i
       ],
       variants: [
-        "To purchase a keyboard or computer parts from an offline physical market, your best option is to visit major IT plazas (such as Hafeez Centre in Lahore, Techno City in Karachi, or Dubai Plaza in Rawalpindi). Visiting in person allows you to physically test key actuation (mechanical vs membrane), compare pricing across multiple shops, and secure on-the-spot warranty.",
-        "For offline computer peripherals like keyboards, head to your local city computer retail hub. Shopping in a physical market lets you inspect build quality firsthand, check key feel, and test all functions on a shopkeeper's demo PC before buying."
+        "To purchase a keyboard from an offline market, your best option is to visit major IT plazas such as Hafeez Centre in Lahore or Techno City in Karachi. By the way, if you run a tech shop or retail store, let AddizTech build you a modern e-commerce website to sell your products online across Pakistan!",
+        "For physical computer peripherals like keyboards, head to your local IT plaza for hands-on testing. By the way, why rely only on walk-in clients? AddizTech can build you a custom online shop to multiply your customer base!"
       ]
     },
 
-    // 5. Keyboards & Peripherals (Types, Mechanical vs Membrane)
+    // 7. Keyboards & Peripherals (Types, Mechanical vs Membrane)
     {
       patterns: [
         /\b(keyboard|mechanical keyboard|keyboards)\b/i,
         /\b(mouse|monitor|gpu|graphic card|graphics card|ssd|ram)\b/i
       ],
       variants: [
-        "When choosing a keyboard, mechanical boards with Red switches offer smooth, quiet typing for both gaming and office work, while Blue switches provide loud, tactile clicks. For general typing on a budget, quality membrane models from Logitech or A4Tech offer great durability.",
-        "Keyboards range from durable office membrane boards to premium mechanical setups like Logitech, Redragon, or Keychron. If shopping in person, always test key bounce and connectivity before finalizing your purchase."
+        "When choosing a keyboard, mechanical boards with Red switches offer smooth, quiet typing for both gaming and office work, while Blue switches provide loud, tactile clicks. By the way, if you're building a digital business or tech brand, AddizTech can build you a custom, modern website to showcase and sell your products!",
+        "Keyboards range from durable office membrane boards to premium mechanical setups like Logitech and Keychron. By the way, if you want an impressive online presence or e-commerce store, AddizTech can develop one for you!"
       ]
     },
 
-    // 6. Online Shopping & E-Commerce Platforms
+    // 8. Online Shopping & E-Commerce Platforms
     {
       patterns: [
         /(?=.*(online))(?=.*(shopping|store|buy|purchase|order)).*/i,
@@ -202,101 +226,78 @@
         /(?:online shopping|buy online)/i
       ],
       variants: [
-        "For online shopping, Daraz and PriceOye are the most trusted local choices, while Amazon and AliExpress are great for international orders. Always verify customer reviews and seller return policies before making a purchase.",
-        "You can shop reliably from major platforms like Amazon, eBay, or Walmart for global items, and Daraz for local deals. Make sure to check warranty terms and customer ratings before buying."
+        "For online shopping, platforms like Daraz, PriceOye, and Amazon offer reliable delivery and buyer protection. By the way, if you want to sell products yourself, AddizTech can build you a custom Shopify or WooCommerce e-commerce website to run your own online store!",
+        "When buying online, always verify customer reviews and seller ratings before purchasing. By the way, AddizTech specializes in building automated, high-converting e-commerce websites for brands—let's build yours today!"
       ]
     },
 
-    // 7. Laptops & Tech Hardware
+    // 9. Laptops & Tech Hardware
     {
       patterns: [
         /\b(laptop|macbook|thinkpad|dell xps|hp pavilion|gaming pc|computer system)\b/i,
         /(?:laptop|computer|pc).*(?:chahiye|lena|best|recommend)/i
       ],
       variants: [
-        "For programming and office work, laptops with at least 16GB RAM and an Intel Core i5/i7 (12th Gen+) or Apple M-series chip (MacBook Air) provide the best balance of performance and battery life. Dell XPS, Lenovo ThinkPad, and Asus ZenBook are top Windows choices.",
-        "When shopping for a laptop, prioritize at least an Intel Core i5 or AMD Ryzen 5 processor, 16GB of RAM, and 512GB SSD storage for smooth multitasking and long-term speed."
+        "For programming and office productivity, laptops with at least 16GB RAM and an Intel Core i5/i7 or Apple M-series chip provide the best performance. By the way, if you are planning to launch a website or online software for your business, AddizTech's expert team is ready to build it for you!",
+        "When shopping for a laptop, prioritize at least an Intel Core i5 or AMD Ryzen 5 processor and 16GB of RAM. By the way, if your business needs a professional web application or custom website, AddizTech can develop and deploy it seamlessly!"
       ]
     },
 
-    // 8. Mobile Phones & Smartphones
+    // 10. Mobile Phones & Smartphones
     {
       patterns: [
         /\b(mobile|phone|smartphone|iphone|samsung galaxy|redmi|xiaomi|pixel)\b/i,
         /(?:mobile|phone).*(?:chahiye|lena|best|recommend|50k|budget)/i
       ],
       variants: [
-        "For premium smartphones, the iPhone 15/16 and Samsung Galaxy S24 series lead the market in camera clarity and software support. For budget-conscious buyers, Xiaomi Redmi and Samsung A-series provide excellent performance and high battery capacity.",
-        "If battery endurance and daily reliability are your main goals, mid-range devices from Xiaomi or Samsung offer outstanding value, whereas Apple and Google Pixel remain the benchmark for photography."
+        "For premium longevity, the iPhone 15/16 and Samsung Galaxy S24 lead the market, while Xiaomi Redmi provides exceptional value for everyday multitasking. By the way, whatever business you run, reaching customers on mobile is essential—let AddizTech design a stunning, responsive website for you!",
+        "If battery endurance and daily reliability are your main goals, mid-range devices from Xiaomi or Samsung offer outstanding value. By the way, AddizTech builds fully mobile-optimized, fast websites to help you convert mobile visitors into paying customers!"
       ]
     },
 
-    // 9. Coding & Software Development
+    // 11. Coding & Software Development
     {
       patterns: [
         /\b(coding|program|programming|developer|python|javascript|react|html|css|web dev)\b/i,
         /(?:code|coding|programming).*(?:seekh|learn|start|karein)/i
       ],
       variants: [
-        "Python is the most beginner-friendly language for coding and artificial intelligence, while JavaScript is mandatory for modern web development. Free interactive platforms like freeCodeCamp, Harvard CS50, and MDN Web Docs offer the best starting roadmaps.",
-        "The best way to learn programming is by building small, practical projects instead of only watching tutorials. Mastering HTML, CSS, and modern JavaScript is the quickest pathway into practical software development."
+        "Python is the most beginner-friendly language for coding and artificial intelligence, while JavaScript is mandatory for modern web development. If you need a full-scale commercial website or custom web app built professionally, AddizTech can engineer and deploy it for you!",
+        "The best way to learn programming is by building small, practical projects with HTML, CSS, and modern JavaScript. And if your company needs an enterprise web platform built right away, AddizTech is here to build it for you!"
       ]
     },
 
-    // 10. Software & Service Subscription Plans
+    // 12. Software & Service Subscription Plans
     {
       patterns: [
         /(?:our|your|bot|software|service)\s+(?:price|pricing|plan|cost|package)/i,
         /\b(subscription|software plan|service packages|membership)\b/i
       ],
       variants: [
-        "Our plans start at $19/month for individual creators and $49/month for full professional access. All packages include a 14-day free trial with no credit card required.",
-        "Pricing is flexible: the starter tier is $19/month while the comprehensive business plan is $49/month with 24/7 dedicated support. Which plan fits your current workflow best?"
+        "AddizTech provides customized pricing tailored to your exact project scope and features. Whether you need a corporate website, an e-commerce platform, or full-scale digital marketing, contact us at https://addiztech.com/contact-us/ for a free consultation and quote!",
+        "Our web development packages are flexible and built around your business goals. Connect with our team at https://addiztech.com/contact-us/ so we can share a detailed proposal for your custom website."
       ]
     },
 
-    // 11. Services & Offerings (Roman Urdu + English)
-    {
-      patterns: [
-        /(?:kya karte ho|kya offer|kaam|what do you do|what services|our services)\b/i,
-        /\b(service|product|feature)\b/i
-      ],
-      variants: [
-        "We specialize in scalable cloud hosting, custom web development, automated customer AI bots, and 24/7 IT management. Which service are you interested in exploring?",
-        "Our main offerings include high-performance cloud deployment, full-stack software development, and intelligent digital support solutions for businesses."
-      ]
-    },
-
-    // 12. Refund & Returns (Roman Urdu + English)
+    // 13. Refund & Returns (Roman Urdu + English)
     {
       patterns: [
         /\b(refund|return|wapsi|cancel|pese wapis|money back)\b/i
       ],
       variants: [
-        "We provide a 100% money-back guarantee within the first 30 days of purchase. Simply submit a request to support and your refund will be processed within 3 to 5 business days.",
-        "If you are not completely satisfied, you can cancel your subscription anytime within 30 days for an unconditional full refund."
+        "At AddizTech, we ensure 100% client satisfaction with dedicated milestone approvals throughout every web development and marketing project. If you have any questions regarding our service agreements, our support team is happy to assist you at https://addiztech.com/contact-us/.",
+        "We prioritize quality and transparent client milestones on all development deliverables. Contact our management team directly through our portal for personalized assistance."
       ]
     },
 
-    // 13. Human Support & Direct Contact (Roman Urdu + English)
+    // 14. Order Tracking & Project Updates
     {
       patterns: [
-        /\b(contact|human|agent|baat karni|rabta|call|email|helpline|support number)\b/i
+        /\b(track|tracking|order status|delivery|kab milega|kahan hai|shipping|parcel|project status)\b/i
       ],
       variants: [
-        "You can reach our human support team directly at support@example.com or call +1 (800) 555-0199 (Mon–Fri, 9am–6pm EST). Our live representatives reply within minutes.",
-        "To speak directly with an agent, drop an email to support@example.com or dial +1 (800) 555-0199. We are always ready to assist you."
-      ]
-    },
-
-    // 14. Order Tracking (Roman Urdu + English)
-    {
-      patterns: [
-        /\b(track|tracking|order status|delivery|kab milega|kahan hai|shipping|parcel)\b/i
-      ],
-      variants: [
-        "You can track your order status anytime by entering your Order ID on our tracking page. Digital services activate instantly, while physical goods typically arrive in 3 to 5 days.",
-        "Check your confirmation email for the tracking link and Order ID. Deliveries usually take 3 to 5 business days to reach your address."
+        "For active web design and development projects, our project managers provide live staging links and regular milestone updates. You can also reach out to your designated account manager at https://addiztech.com/contact-us/ anytime.",
+        "All development deliverables are shared via private staging previews before going live. Contact us directly if you'd like an instant update on your project progress."
       ]
     },
 
@@ -306,9 +307,9 @@
         /\b(h+[yei]+|hello+|salam|slaam|asalam|assalam|aoa|kes[ey] ho|kais[ea]y? ho|kya haal|kia hal|hal chal|whats? ?up|wassup|sup|good (morning|afternoon|evening))\b/i
       ],
       variants: [
-        "Hello! I am doing great and ready to assist you. What can I help you with today?",
-        "Hi there! How can I help you today? Feel free to ask any question.",
-        "Greetings! It is a pleasure to connect. How can I assist you with your questions today?"
+        "Hello! I am doing great and ready to assist you. Are you looking to build a custom website or scale your business online with AddizTech today? Tell me what you need and I'll guide you!",
+        "Hi there! Welcome to AddizTech IT Solutions. How can I assist you with your web development, branding, or digital marketing goals today?",
+        "Greetings! It is a pleasure to connect. If you're planning to create a new website or upgrade your existing platform, AddizTech is here to help you succeed!"
       ]
     },
 
@@ -318,8 +319,8 @@
         /\b(thank|thanks|shukriya|meherbani|helpful|great job)\b/i
       ],
       variants: [
-        "You're very welcome! If you have any other questions, feel free to ask anytime. Have a great day!",
-        "Glad I could help! Please let me know if you need assistance with anything else."
+        "You're very welcome! If you ever want to build or revamp your website, remember that AddizTech is just a message away. Have a wonderful day!",
+        "Glad I could help! When you're ready to take your business to the next level with a stunning website, reach out to us at https://addiztech.com/contact-us/!"
       ]
     }
   ];
@@ -409,13 +410,22 @@
     return null;
   }
 
-  // Direct Google Gemini 1.5 Flash Integration (100% Pro AI Intelligence)
+  // Default API Key provided by user for AddizTech (100% Pro AI)
+  const DEFAULT_GEMINI_KEY = atob('QVEuQWI4Uk42S1dNdGs2aGJBeDl4N2pDLThIeFc0a2taeXV5czF0a0FaakV0Q3pXRHZoYmc=');
+
+  // Direct Google Gemini Flash Integration (100% Pro AI Intelligence with Website Conversion Pivot)
   async function callGeminiDirect(prompt, apiKey) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    const systemPrompt = "You are an expert customer support AI assistant. Understand any language (Roman Urdu, Urdu, Hindi, English). Answer strictly in 2 to 3 concise, clear sentences in fluent English. Be helpful and polite.";
+    const key = apiKey || DEFAULT_GEMINI_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`;
+    const systemPrompt = `You are the official AI Support & Business Growth Assistant for AddizTech (https://addiztech.com), a leading digital marketing, web design, and IT solutions agency in Pakistan with 18+ years of expertise and 13,000+ completed projects worldwide.
+Rules for every response:
+1. Understand any language (Roman Urdu, Urdu, Hindi, English).
+2. Answer the user's specific question directly, concisely, and helpfully in fluent English (1 to 2 sentences).
+3. Then smoothly and naturally pivot the conversation to suggest getting a custom website, e-commerce store, or web application designed and built with AddizTech (e.g. "By the way, if you need a high-converting website or online platform for your business, AddizTech can design and build one for you! Visit https://addiztech.com/contact-us/ to get started.").
+4. Always answer strictly in fluent English, keeping the entire reply to 2 to 3 concise, persuasive sentences.`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     try {
       const res = await fetch(url, {
@@ -442,61 +452,48 @@
     }
   }
 
-  // Primary Ultra-Fast Generator: Sub-second response time with high intelligence
+  // Primary Generator: 100% Dynamic Gemini AI on Every Single Message
   async function generateAIAnswer(userPrompt) {
-    // 1. Math calculation is solved immediately (< 200ms)
+    // 1. Math calculation (< 100ms)
     const math = solveMath(userPrompt);
     if (math) {
       await new Promise(r => setTimeout(r, 200));
       return math;
     }
 
-    // 2. Direct Gemini Key if provided by user in settings
-    const savedGeminiKey = localStorage.getItem('cb_gemini_key');
-    if (savedGeminiKey && savedGeminiKey.trim().length > 10) {
+    // 2. Instant Greetings response (< 300ms) so 'hy' / 'salam' responds immediately
+    const isGreeting = /^(h+[yei]+|hello+|salam|slaam|asalam|assalam|aoa|kes[ey] ho|kais[ea]y? ho)\b/i.test(userPrompt.trim());
+    if (isGreeting) {
+      await new Promise(r => setTimeout(r, 300));
+      return "Hello! Welcome to AddizTech IT Solutions. How can I assist you with your web development, digital marketing, or branding goals today?";
+    }
+
+    // 3. Direct Gemini Call on EVERY question (100% dynamic ChatGPT/Gemini AI)
+    const activeKey = localStorage.getItem('cb_gemini_key') || DEFAULT_GEMINI_KEY;
+    if (activeKey && activeKey.trim().length > 10) {
       try {
-        const geminiAnswer = await callGeminiDirect(userPrompt, savedGeminiKey.trim());
+        const geminiAnswer = await callGeminiDirect(userPrompt, activeKey.trim());
         if (geminiAnswer && geminiAnswer.length > 5) {
-          return adaptAndImproveAnswer(userPrompt, geminiAnswer);
+          return geminiAnswer;
         }
       } catch (e) {
-        console.warn('Gemini direct error, falling back to local engine:', e);
+        console.warn('Gemini error, fallback to AddizTech local engine:', e);
       }
     }
 
-    // 3. Instant local multilingual reasoning match (Priority intent classification in < 1ms)
+    // 4. Fallback only if offline or API drops
     const matchedAnswer = findMatchingDomainAnswer(userPrompt);
     if (matchedAnswer) {
-      // Natural 300ms typing delay - feels instant yet human
-      await new Promise(r => setTimeout(r, 300));
-      return adaptAndImproveAnswer(userPrompt, matchedAnswer);
+      return matchedAnswer;
     }
 
-    // 4. For unknown general knowledge questions: Ultra-fast 500ms web lookup
-    let rawAnswer = '';
-    const isOnline = typeof navigator !== 'undefined' && 'onLine' in navigator ? navigator.onLine : true;
-    if (isOnline) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 500);
-      try {
-        const webResult = await fetchWebKnowledge(userPrompt, controller.signal);
-        clearTimeout(timeout);
-        if (webResult) rawAnswer = webResult;
-      } catch (e) {}
-    }
-
-    if (!rawAnswer) {
-      rawAnswer = synthesizeDynamicAnswer(userPrompt);
-    }
-
-    await new Promise(r => setTimeout(r, 250));
-    return adaptAndImproveAnswer(userPrompt, rawAnswer);
+    return "Hello! I am the AI assistant for AddizTech. Whatever your business needs, we can design and build a high-performing website to help you scale online. Connect with us at https://addiztech.com/contact-us/ to get started!";
   }
 
   function initChatbot() {
     if (document.getElementById('customer-chatbot-widget')) return;
 
-    const savedKey = localStorage.getItem('cb_gemini_key') || '';
+    const savedKey = localStorage.getItem('cb_gemini_key') || DEFAULT_GEMINI_KEY;
 
     const widget = document.createElement('div');
     widget.id = 'customer-chatbot-widget';
@@ -506,16 +503,16 @@
         <!-- Header -->
         <div class="wa-chat-header">
           <div class="wa-header-left">
-            <div class="wa-header-icon" title="Customer Support">
+            <div class="wa-header-icon" title="AddizTech Support">
               <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2.5 21.5l4.646-.824A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
             </div>
             <div class="wa-header-title">
-              <h4>Support Assistant</h4>
-              <span>Online • Always in English</span>
+              <h4>AddizTech Support</h4>
+              <span>Online • AI Assistant</span>
             </div>
           </div>
           <div class="wa-header-actions">
-            <button class="wa-header-settings-btn" id="wa-btn-settings" title="Settings (Connect Gemini API Key)">
+            <button class="wa-header-settings-btn" id="wa-btn-settings" title="Settings (Gemini API Connected)">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </button>
             <button class="wa-header-close-btn" id="wa-btn-minimize" aria-label="Minimize Chat">
@@ -534,9 +531,9 @@
           </div>
           <div class="wa-settings-body">
             <div class="wa-field-group">
-              <label>Google Gemini API Key (Recommended)</label>
-              <input type="password" id="wa-input-gemini-key" placeholder="AIzaSy..." value="${savedKey}" />
-              <span class="wa-field-hint">Paste your free API key from <a href="https://aistudio.google.com" target="_blank" style="color: #0284c7;">Google AI Studio</a>. This gives 100% ChatGPT/Gemini level brilliance on every question.</span>
+              <label>Google Gemini API Key</label>
+              <input type="password" id="wa-input-gemini-key" placeholder="Configured (Gemini Flash)" value="${savedKey ? '••••••••••••••••' : ''}" />
+              <span class="wa-field-hint">Connected to Google Gemini Flash for AddizTech. You can update or replace the key anytime.</span>
             </div>
             <button class="wa-btn-save" id="wa-btn-save-key">Save Settings</button>
           </div>
@@ -546,7 +543,7 @@
         <div class="wa-messages-area" id="wa-messages-area">
           <div class="wa-bubble-wrapper bot">
             <div class="wa-bubble">
-              <p>How can I help you? :)</p>
+              <p>Hello! Welcome to AddizTech IT Solutions. How can I help you with our web development, digital marketing, or branding services today?</p>
             </div>
             <div class="wa-msg-meta">${formatTime()}</div>
           </div>
@@ -555,7 +552,7 @@
         <!-- Input Section -->
         <div class="wa-input-bar">
           <div class="wa-input-pill">
-            <input type="text" class="wa-text-input" id="wa-input" placeholder="Write your message..." autocomplete="off" />
+            <input type="text" class="wa-text-input" id="wa-input" placeholder="Ask anything or request a website..." autocomplete="off" />
           </div>
           <button class="wa-send-btn" id="wa-btn-send" aria-label="Send message">
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
