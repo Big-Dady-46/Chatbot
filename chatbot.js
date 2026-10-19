@@ -425,7 +425,7 @@ Rules for every response:
 4. Always answer strictly in fluent English, keeping the entire reply to 2 to 3 concise, persuasive sentences.`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
       const res = await fetch(url, {
@@ -443,7 +443,7 @@ Rules for every response:
         })
       });
       clearTimeout(timeout);
-      if (!res.ok) throw new Error('Gemini API error');
+      if (!res.ok) throw new Error('Gemini API error: ' + res.status);
       const data = await res.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     } catch (e) {
@@ -454,21 +454,7 @@ Rules for every response:
 
   // Primary Generator: 100% Dynamic Gemini AI on Every Single Message
   async function generateAIAnswer(userPrompt) {
-    // 1. Math calculation (< 100ms)
-    const math = solveMath(userPrompt);
-    if (math) {
-      await new Promise(r => setTimeout(r, 200));
-      return math;
-    }
-
-    // 2. Instant Greetings response (< 300ms) so 'hy' / 'salam' responds immediately
-    const isGreeting = /^(h+[yei]+|hello+|salam|slaam|asalam|assalam|aoa|kes[ey] ho|kais[ea]y? ho)\b/i.test(userPrompt.trim());
-    if (isGreeting) {
-      await new Promise(r => setTimeout(r, 300));
-      return "Hello! Welcome to AddizTech IT Solutions. How can I assist you with your web development, digital marketing, or branding goals today?";
-    }
-
-    // 3. Direct Gemini Call on EVERY question (100% dynamic ChatGPT/Gemini AI)
+    // 1. Direct Gemini Call on EVERY question (100% dynamic AI)
     const activeKey = localStorage.getItem('cb_gemini_key') || DEFAULT_GEMINI_KEY;
     if (activeKey && activeKey.trim().length > 10) {
       try {
@@ -481,7 +467,7 @@ Rules for every response:
       }
     }
 
-    // 4. Fallback only if offline or API drops
+    // 2. Fallback only if offline or network connection drops
     const matchedAnswer = findMatchingDomainAnswer(userPrompt);
     if (matchedAnswer) {
       return matchedAnswer;
@@ -539,15 +525,8 @@ Rules for every response:
           </div>
         </div>
 
-        <!-- Messages Area -->
-        <div class="wa-messages-area" id="wa-messages-area">
-          <div class="wa-bubble-wrapper bot">
-            <div class="wa-bubble">
-              <p>Hello! Welcome to AddizTech IT Solutions. How can I help you with our web development, digital marketing, or branding services today?</p>
-            </div>
-            <div class="wa-msg-meta">${formatTime()}</div>
-          </div>
-        </div>
+        <!-- Messages Area (Empty by default: no automatic messages) -->
+        <div class="wa-messages-area" id="wa-messages-area"></div>
 
         <!-- Input Section -->
         <div class="wa-input-bar">
