@@ -89,6 +89,14 @@
     let refinedAnswer = rawAnswer;
     const lowerPrompt = prompt.toLowerCase();
 
+    // Keep casual greetings natural and clean
+    const isGreeting = /\b(h+[yei]+|hello+|salam|slaam|asalam|assalam|aoa|kes[ey] ho|kais[ea]y? ho|kia hal|kya haal|hal chal)\b/i.test(lowerPrompt);
+    if (isGreeting) {
+      db[key] = existing;
+      saveLearnedDB(db);
+      return rawAnswer;
+    }
+
     // Tailored iterative enrichment based on context
     const isFlight = /(flight|plane|ticket|jahaz|airline)/i.test(lowerPrompt);
     const isMarket = /(offline|physical|market|bazar|keyboard|hardware|store)/i.test(lowerPrompt);
@@ -295,11 +303,12 @@
     // 15. Greetings & Small Talk (Roman Urdu + English)
     {
       patterns: [
-        /^(hi|hello|hey|salam|aoa|kese ho|kaise ho|kya haal|kya chal raha|good morning|good evening)/i
+        /\b(h+[yei]+|hello+|salam|slaam|asalam|assalam|aoa|kes[ey] ho|kais[ea]y? ho|kya haal|kia hal|hal chal|whats? ?up|wassup|sup|good (morning|afternoon|evening))\b/i
       ],
       variants: [
         "Hello! I am doing great and ready to assist you. What can I help you with today?",
-        "Greetings! It is a pleasure to connect. How can I help you with your questions today?"
+        "Hi there! How can I help you today? Feel free to ask any question.",
+        "Greetings! It is a pleasure to connect. How can I assist you with your questions today?"
       ]
     },
 
