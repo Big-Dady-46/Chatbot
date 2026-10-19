@@ -417,12 +417,11 @@
   async function callGeminiDirect(prompt, apiKey) {
     const key = apiKey || DEFAULT_GEMINI_KEY;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`;
-    const systemPrompt = `You are the official AI Support & Business Growth Assistant for AddizTech (https://addiztech.com), a leading digital marketing, web design, and IT solutions agency in Pakistan with 18+ years of expertise and 13,000+ completed projects worldwide.
-Rules for every response:
-1. Understand any language (Roman Urdu, Urdu, Hindi, English).
-2. Answer the user's specific question directly, concisely, and helpfully in fluent English (1 to 2 sentences).
-3. Then smoothly and naturally pivot the conversation to suggest getting a custom website, e-commerce store, or web application designed and built with AddizTech (e.g. "By the way, if you need a high-converting website or online platform for your business, AddizTech can design and build one for you! Visit https://addiztech.com/contact-us/ to get started.").
-4. Always answer strictly in fluent English, keeping the entire reply to 2 to 3 concise, persuasive sentences.`;
+    const systemPrompt = `You are the official AI Support & Business Growth Assistant for AddizTech (https://addiztech.com), an award-winning digital agency and website development company.
+Rules:
+1. First, directly and helpfully answer the user's specific question or request (understand any language like Roman Urdu, Urdu, Hindi, English). For example, if they ask about buying headphones or laptops, suggest top brands/models and where to find them.
+2. Then smoothly and naturally pivot the conversation to pitch that AddizTech can design and build a high-converting website, e-commerce store, or custom web platform for them (e.g. "By the way, if you run a tech store or any business, AddizTech can design and develop a modern website or e-commerce shop to help you scale! Connect with our team at https://addiztech.com/contact-us/").
+3. Always answer strictly in fluent English, keeping the entire response to 2 to 3 concise, natural sentences.`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
@@ -437,8 +436,11 @@ Rules for every response:
             { role: 'user', parts: [{ text: `${systemPrompt}\n\nUser Question: ${prompt}` }] }
           ],
           generationConfig: {
-            temperature: 0.6,
-            maxOutputTokens: 250
+            temperature: 0.7,
+            maxOutputTokens: 1000,
+            thinkingConfig: {
+              thinkingBudget: 0
+            }
           }
         })
       });
