@@ -507,35 +507,20 @@ Rules for every response:
             </div>
           </div>
           <div class="wa-header-actions">
-            <button class="wa-header-settings-btn" id="wa-btn-settings" title="Settings (Gemini API Connected)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </button>
             <button class="wa-header-close-btn" id="wa-btn-minimize" aria-label="Close Chat">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
         </div>
 
-        <!-- Settings Modal Overlay -->
-        <div class="wa-settings-modal" id="wa-settings-modal">
-          <div class="wa-settings-header">
-            <h3>⚙️ Chatbot Settings</h3>
-            <button class="wa-header-close-btn" id="wa-btn-close-settings" style="color: #1f2937;">
-              <svg viewBox="0 0 24 24" style="stroke: #1f2937;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
-          <div class="wa-settings-body">
-            <div class="wa-field-group">
-              <label>Google Gemini API Key</label>
-              <input type="password" id="wa-input-gemini-key" placeholder="Configured (Gemini Flash)" value="${savedKey ? '••••••••••••••••' : ''}" />
-              <span class="wa-field-hint">Connected to Google Gemini Flash for AddizTech. You can update or replace the key anytime.</span>
+        <!-- Messages Area -->
+        <div class="wa-messages-area" id="wa-messages-area">
+          <div class="wa-bubble-wrapper bot">
+            <div class="wa-bubble">
+              <p>Hi! Welcome to AddizTech. How can I help with your website, brand, e-commerce store or custom digital project today?</p>
             </div>
-            <button class="wa-btn-save" id="wa-btn-save-key">Save Settings</button>
           </div>
         </div>
-
-        <!-- Messages Area (Empty by default: no automatic messages) -->
-        <div class="wa-messages-area" id="wa-messages-area"></div>
 
         <!-- Input Section & Algofort Disclaimer -->
         <div class="wa-input-container">
@@ -570,27 +555,6 @@ Rules for every response:
     const input = document.getElementById('wa-input');
     const sendBtn = document.getElementById('wa-btn-send');
     const messagesArea = document.getElementById('wa-messages-area');
-    const settingsBtn = document.getElementById('wa-btn-settings');
-    const settingsModal = document.getElementById('wa-settings-modal');
-    const closeSettingsBtn = document.getElementById('wa-btn-close-settings');
-    const saveKeyBtn = document.getElementById('wa-btn-save-key');
-    const geminiInput = document.getElementById('wa-input-gemini-key');
-
-    // Settings Modal toggle
-    if (settingsBtn && settingsModal) {
-      settingsBtn.addEventListener('click', () => {
-        settingsModal.classList.add('active');
-      });
-      closeSettingsBtn.addEventListener('click', () => {
-        settingsModal.classList.remove('active');
-      });
-      saveKeyBtn.addEventListener('click', () => {
-        const val = geminiInput.value.trim();
-        localStorage.setItem('cb_gemini_key', val);
-        settingsModal.classList.remove('active');
-        addMessage(val ? "Google Gemini API key saved successfully! The bot is now powered by Gemini AI." : "Settings updated.", false);
-      });
-    }
 
     function toggleChat() {
       const isOpen = chatBox.classList.toggle('open');
@@ -610,7 +574,6 @@ Rules for every response:
         <div class="wa-bubble">
           ${isUser ? `<p>${escapeHtml(text)}</p>` : renderMarkdown(text)}
         </div>
-        <div class="wa-msg-meta">${formatTime()}</div>
       `;
       messagesArea.appendChild(wrapper);
       messagesArea.scrollTop = messagesArea.scrollHeight;
