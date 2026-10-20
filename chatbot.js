@@ -414,28 +414,42 @@
   const DEFAULT_GROQ_KEY = atob('Z3NrX1pEVE14Y2hGOUlNQnVtcGx0SkZvV0dkeWIwRllnY1k5cVFDRFAwZWtvMmJPT2pFQmFBYjU=');
   const DEFAULT_GEMINI_KEY = atob('QVEuQWI4Uk42S1dNdGs2aGJBeDl4N2pDLThIeFc0a2taeXV5czF0a0FaakV0Q3pXRHZoYmc=');
 
-  const systemPrompt = `You are the official AI Assistant for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding). You act like a sharp, highly intelligent, consultative tech specialist (similar to top-tier enterprise AI assistants like Algofort Assistant).
+  const baseSystemPrompt = `You are the official AI Assistant for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding).
 
-Core Guidelines:
-1. Strict Length Control (2 to 7 Lines Normally):
-   - By default, keep every answer concise, sharp, and punchy—strictly between 2 to 7 lines (around 40 to 120 words). Use clean, compact bullet points or short paragraphs. Never write overly long walls of text.
-   - EXCEPTION: Only provide a long, comprehensive breakdown if the user explicitly asks for details (e.g. "tafseel se samjhao", "explain in detail", "step-by-step full guide"). In that case, fulfill their request with complete depth.
-2. Intelligent Consulting Persona:
-   - For website, e-commerce, app, or tech queries: Give high-value, practical insights first (phases, key recommendations, or what to prepare).
-   - Then naturally and smoothly invite them to discuss or build their project with AddizTech at https://addiztech.com/contact-us/.
-3. Unrelated Inquiries:
-   - For non-tech or general questions, answer directly and helpfully in 2-4 lines without forcing an irrelevant website pitch.
-4. Language & Tone:
-   - Understand any language (Roman Urdu, Urdu, Hindi, English). Always reply in polished, fluent English.
-   - Be authoritative, smart, helpful, and natural—never sound like a robotic script.`;
+Personality & Behavioral Rules:
+1. Always reply strictly in fluent, polished English, but fully understand Roman Urdu, Urdu, Hindi, and English.
+2. Be direct, sharp, and helpful like a high-end customer support assistant.
+3. Keep answers very concise and easy to read on mobile. Avoid walls of text.`;
+
+  // Decide if this specific turn should mention/pitch the website
+  function shouldPitchThisTurn() {
+    // Count prior bot messages to alternate perfectly:
+    // Turn 1: No pitch -> Turn 2: Pitch -> Turn 3: No pitch -> Turn 4: Pitch...
+    const botCount = conversationHistory.filter(m => !m.isUser).length;
+    return (botCount % 2 === 0);
+  }
 
   // 1. Ultra-Fast Groq Engine (Qwen 3.8 / Llama on Groq LPU)
   async function callGroqDirect(prompt, apiKey) {
     const key = apiKey || DEFAULT_GROQ_KEY;
     const url = 'https://api.groq.com/openai/v1/chat/completions';
 
+    const isDetailRequested = /(tafseel|detail|step by step|poora guide|full guide|explain in detail)/i.test(prompt);
+    const allowPitch = shouldPitchThisTurn();
+
+    let dynamicRule = "";
+    if (isDetailRequested) {
+      dynamicRule = "The user explicitly asked for details. Provide a comprehensive, structured response.";
+    } else if (allowPitch) {
+      dynamicRule = "IMPORTANT: Keep response short (strictly 2 to 4 sentences). Answer the inquiry first, then add a gentle 1-line invite to build a custom website with AddizTech (https://addiztech.com/contact-us/).";
+    } else {
+      dynamicRule = "IMPORTANT: Keep response very short (strictly 2 to 3 sentences). Answer the inquiry directly and helpfully. DO NOT pitch websites, DO NOT mention AddizTech services, and DO NOT include any links in this response.";
+    }
+
+    const currentSystemPrompt = `${baseSystemPrompt}\n\n${dynamicRule}`;
+
     const messages = [
-      { role: 'system', content: systemPrompt },
+      { role: 'system', content: currentSystemPrompt },
       { role: 'user', content: 'Hello' },
       { role: 'assistant', content: 'Hi! Welcome to AddizTech. How can I help with your website, brand, e-commerce store or custom digital project today?' }
     ];
@@ -463,8 +477,8 @@ Core Guidelines:
         body: JSON.stringify({
           model: 'qwen/qwen3.8-27b',
           messages: messages,
-          max_tokens: 800,
-          temperature: 0.6
+          max_tokens: isDetailRequested ? 500 : 180,
+          temperature: 0.5
         })
       });
       clearTimeout(timeout);
@@ -484,6 +498,20 @@ Core Guidelines:
   async function callGeminiDirect(prompt, apiKey) {
     const key = apiKey || DEFAULT_GEMINI_KEY;
     const models = ['models/gemini-3.5-flash-lite', 'models/gemini-3.5-flash'];
+
+    const isDetailRequested = /(tafseel|detail|step by step|poora guide|full guide|explain in detail)/i.test(prompt);
+    const allowPitch = shouldPitchThisTurn();
+
+    let dynamicRule = "";
+    if (isDetailRequested) {
+      dynamicRule = "The user explicitly asked for details. Provide a comprehensive, structured response.";
+    } else if (allowPitch) {
+      dynamicRule = "IMPORTANT: Keep response short (strictly 2 to 4 sentences). Answer the inquiry first, then add a gentle 1-line invite to build a custom website with AddizTech (https://addiztech.com/contact-us/).";
+    } else {
+      dynamicRule = "IMPORTANT: Keep response very short (strictly 2 to 3 sentences). Answer the inquiry directly and helpfully. DO NOT pitch websites, DO NOT mention AddizTech services, and DO NOT include any links in this response.";
+    }
+
+    const currentSystemPrompt = `${baseSystemPrompt}\n\n${dynamicRule}`;
 
     const contents = [
       { role: 'user', parts: [{ text: 'Hello' }] },
@@ -516,9 +544,9 @@ Core Guidelines:
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
+            systemInstruction: { parts: [{ text: currentSystemPrompt }] },
             contents: contents,
-            generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+            generationConfig: { temperature: 0.6, maxOutputTokens: isDetailRequested ? 500 : 180 }
           })
         });
         clearTimeout(timeout);
