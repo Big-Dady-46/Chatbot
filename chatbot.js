@@ -416,69 +416,85 @@
   // Direct Google Gemini Flash Integration (100% Pro AI Intelligence with Multi-Turn Context)
   async function callGeminiDirect(prompt, apiKey) {
     const key = apiKey || DEFAULT_GEMINI_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`;
-    const systemPrompt = `You are the official AI Support & Business Growth Assistant for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding).
+    const models = ['models/gemini-3.5-flash-lite', 'models/gemini-3.5-flash', 'models/gemini-flash-latest'];
+    
+    const systemPrompt = `You are the official AI Support & Web Solutions Specialist for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding).
 
-Personality & Behavioral Guidelines:
-1. Multilingual Understanding: Understand queries in any language (Roman Urdu, Urdu, Hindi, English). Always respond strictly in fluent, natural English.
-2. Direct & Intelligent Answers: Always answer the user's inquiry directly, accurately, and thoroughly first. Never dodge the question.
-3. Conversational & Human: Never give canned, fixed, or repetitive answers. Each response must feel completely natural, consultative, and human.
-4. Smart & Subtle Web Presence Guidance:
-   - Do NOT be an aggressive salesperson or force a website pitch into every single message.
-   - If the user is discussing a completely unrelated topic where mentioning a website makes no sense (such as personal feelings, health, weather, or simple factual trivia), simply answer their question helpfully without forcing any website pitch.
-   - For business, retail, tech, e-commerce, portfolios, brands, shops, or commercial topics, naturally mention the importance of a strong web presence or modern online platform.
-   - As the conversation unfolds (especially after 2-3 messages), gently and persuasively nudge the user towards getting a custom website, web app, or e-commerce store built by AddizTech, inviting them to check https://addiztech.com/contact-us/.
-5. Length: Keep replies concise, engaging, and polished (2 to 4 sentences).`;
+Core Guidelines:
+1. Thorough Explanations for Website & Tech Queries:
+   - When a user asks about website development (e.g. "explain the process of building a website", "what do I need to tell the developer?", tech stack, cost, features, SEO, etc.), NEVER deflect or give a generic "contact us" response.
+   - ALWAYS explain the actual details, phases, and recommendations clearly, intelligently, and thoroughly first (e.g. Planning/Sitemap -> UI/UX Design -> Full-Stack Coding -> QA Testing & Deployment, and what requirements to prepare).
+   - Once you have given the helpful, comprehensive explanation, invite them to discuss or build their project with AddizTech at https://addiztech.com/contact-us/.
+2. General & Other Inquiries:
+   - If the user asks general questions or unrelated queries (e.g., about products, shopping, general facts), answer them directly, helpfully, and politely first.
+   - For business, retail, or commercial topics, subtly mention how a modern online platform or website helps their growth.
+   - If the topic has zero connection to business or tech (e.g., pure trivia or personal questions), answer helpfully without forcing any website pitch.
+3. Language & Polish:
+   - Understand any language (Roman Urdu, Urdu, Hindi, English). Always reply in polished, fluent English.
+   - Never sound like a robotic canned script. Be consultative, human-like, and professional.`;
 
-    // Build multi-turn context
-    const contents = [];
-    const recentHistory = conversationHistory.slice(-8);
-    for (const msg of recentHistory) {
-      contents.push({
-        role: msg.isUser ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-      });
+    // Construct valid alternating conversation history
+    const contents = [
+      { role: 'user', parts: [{ text: 'Hello' }] },
+      { role: 'model', parts: [{ text: 'Hi! Welcome to AddizTech. How can I help with your website, brand, e-commerce store or custom digital project today?' }] }
+    ];
+
+    const pastHistory = conversationHistory.slice(0, -1).slice(-6);
+    let lastRole = 'model';
+    for (const msg of pastHistory) {
+      const role = msg.isUser ? 'user' : 'model';
+      if (role !== lastRole) {
+        contents.push({ role, parts: [{ text: msg.text }] });
+        lastRole = role;
+      }
     }
-    contents.push({
-      role: 'user',
-      parts: [{ text: prompt }]
-    });
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    if (lastRole === 'user') {
+      contents.pop();
+    }
+    contents.push({ role: 'user', parts: [{ text: prompt }] });
 
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: systemPrompt }]
-          },
-          contents: contents,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 1000,
-            thinkingConfig: {
-              thinkingBudget: 0
+    // Try models in order of speed and stability
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 18000);
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }]
+            },
+            contents: contents,
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 1000
             }
+          })
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = await res.json();
+          const answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (answer && answer.length > 5) {
+            return answer;
           }
-        })
-      });
-      clearTimeout(timeout);
-      if (!res.ok) throw new Error('Gemini API error: ' + res.status);
-      const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    } catch (e) {
-      clearTimeout(timeout);
-      throw e;
+        }
+      } catch (e) {
+        clearTimeout(timeout);
+        console.warn(`Model ${model} failed, trying next:`, e.message);
+      }
     }
+
+    throw new Error('All AI models unavailable');
   }
 
   // Primary Generator: 100% Dynamic Gemini AI on Every Single Message
   async function generateAIAnswer(userPrompt) {
-    // 1. Direct Gemini Call on EVERY question (100% dynamic AI)
     const activeKey = localStorage.getItem('cb_gemini_key') || DEFAULT_GEMINI_KEY;
     if (activeKey && activeKey.trim().length > 10) {
       try {
@@ -487,17 +503,17 @@ Personality & Behavioral Guidelines:
           return geminiAnswer;
         }
       } catch (e) {
-        console.warn('Gemini error, fallback to AddizTech local engine:', e);
+        console.warn('Gemini error:', e);
       }
     }
 
-    // 2. Fallback only if offline or network connection drops
-    const matchedAnswer = findMatchingDomainAnswer(userPrompt);
-    if (matchedAnswer) {
-      return matchedAnswer;
+    // Dynamic Intelligent Fallback if completely offline
+    const lower = userPrompt.toLowerCase();
+    if (lower.includes('website') || lower.includes('process') || lower.includes('developer') || lower.includes('build')) {
+      return "Building a website typically involves 4 core phases: 1) Planning & Wireframing (defining project goals and sitemap), 2) UI/UX Design (visual layouts and branding), 3) Full-Stack Development (coding frontend, backend, and features), and 4) QA Testing & Launch. When preparing for your developer, define your target audience, desired features, brand assets, and reference sites. At AddizTech, we manage this entire process for you to create high-converting websites—connect with our team at https://addiztech.com/contact-us/ to start your project!";
     }
 
-    return "Hello! I am the AI assistant for AddizTech. Whatever your business needs, we can design and build a high-performing website to help you scale online. Connect with us at https://addiztech.com/contact-us/ to get started!";
+    return "Hello! I am the AI assistant for AddizTech. Whatever your business or technical needs, we are here to provide clear guidance and build high-performing digital solutions to help you scale. Feel free to ask any question or connect with us at https://addiztech.com/contact-us/!";
   }
 
   function initChatbot() {
