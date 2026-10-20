@@ -413,15 +413,36 @@
   // Default API Key provided by user for AddizTech (100% Pro AI)
   const DEFAULT_GEMINI_KEY = atob('QVEuQWI4Uk42S1dNdGs2aGJBeDl4N2pDLThIeFc0a2taeXV5czF0a0FaakV0Q3pXRHZoYmc=');
 
-  // Direct Google Gemini Flash Integration (100% Pro AI Intelligence with Website Conversion Pivot)
+  // Direct Google Gemini Flash Integration (100% Pro AI Intelligence with Multi-Turn Context)
   async function callGeminiDirect(prompt, apiKey) {
     const key = apiKey || DEFAULT_GEMINI_KEY;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`;
-    const systemPrompt = `You are the official AI Support & Business Growth Assistant for AddizTech (https://addiztech.com), an award-winning digital agency and website development company.
-Rules:
-1. First, directly and helpfully answer the user's specific question or request (understand any language like Roman Urdu, Urdu, Hindi, English). For example, if they ask about buying headphones or laptops, suggest top brands/models and where to find them.
-2. Then smoothly and naturally pivot the conversation to pitch that AddizTech can design and build a high-converting website, e-commerce store, or custom web platform for them (e.g. "By the way, if you run a tech store or any business, AddizTech can design and develop a modern website or e-commerce shop to help you scale! Connect with our team at https://addiztech.com/contact-us/").
-3. Always answer strictly in fluent English, keeping the entire response to 2 to 3 concise, natural sentences.`;
+    const systemPrompt = `You are the official AI Support & Business Growth Assistant for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding).
+
+Personality & Behavioral Guidelines:
+1. Multilingual Understanding: Understand queries in any language (Roman Urdu, Urdu, Hindi, English). Always respond strictly in fluent, natural English.
+2. Direct & Intelligent Answers: Always answer the user's inquiry directly, accurately, and thoroughly first. Never dodge the question.
+3. Conversational & Human: Never give canned, fixed, or repetitive answers. Each response must feel completely natural, consultative, and human.
+4. Smart & Subtle Web Presence Guidance:
+   - Do NOT be an aggressive salesperson or force a website pitch into every single message.
+   - If the user is discussing a completely unrelated topic where mentioning a website makes no sense (such as personal feelings, health, weather, or simple factual trivia), simply answer their question helpfully without forcing any website pitch.
+   - For business, retail, tech, e-commerce, portfolios, brands, shops, or commercial topics, naturally mention the importance of a strong web presence or modern online platform.
+   - As the conversation unfolds (especially after 2-3 messages), gently and persuasively nudge the user towards getting a custom website, web app, or e-commerce store built by AddizTech, inviting them to check https://addiztech.com/contact-us/.
+5. Length: Keep replies concise, engaging, and polished (2 to 4 sentences).`;
+
+    // Build multi-turn context
+    const contents = [];
+    const recentHistory = conversationHistory.slice(-8);
+    for (const msg of recentHistory) {
+      contents.push({
+        role: msg.isUser ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      });
+    }
+    contents.push({
+      role: 'user',
+      parts: [{ text: prompt }]
+    });
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
@@ -432,9 +453,10 @@ Rules:
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
-          contents: [
-            { role: 'user', parts: [{ text: `${systemPrompt}\n\nUser Question: ${prompt}` }] }
-          ],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: contents,
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 1000,
