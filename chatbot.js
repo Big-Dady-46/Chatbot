@@ -410,15 +410,11 @@
     return null;
   }
 
-  // Default API Key provided by user for AddizTech (100% Pro AI)
+  // Primary API Keys for AddizTech (Groq LPU + Google Gemini Dual Engine)
+  const DEFAULT_GROQ_KEY = atob('Z3NrX1pEVE14Y2hGOUlNQnVtcGx0SkZvV0dkeWIwRllnY1k5cVFDRFAwZWtvMmJPT2pFQmFBYjU=');
   const DEFAULT_GEMINI_KEY = atob('QVEuQWI4Uk42S1dNdGs2aGJBeDl4N2pDLThIeFc0a2taeXV5czF0a0FaakV0Q3pXRHZoYmc=');
 
-  // Direct Google Gemini Flash Integration (100% Pro AI Intelligence with Multi-Turn Context)
-  async function callGeminiDirect(prompt, apiKey) {
-    const key = apiKey || DEFAULT_GEMINI_KEY;
-    const models = ['models/gemini-3.5-flash-lite', 'models/gemini-3.5-flash', 'models/gemini-flash-latest'];
-    
-    const systemPrompt = `You are the official AI Support & Web Solutions Specialist for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding).
+  const systemPrompt = `You are the official AI Support & Web Solutions Specialist for AddizTech (https://addiztech.com), an award-winning digital agency and premier web design & development company (WordPress, Shopify, React/Next.js, Custom Web Apps, SEO, Branding).
 
 Core Guidelines:
 1. Thorough Explanations for Website & Tech Queries:
@@ -433,7 +429,62 @@ Core Guidelines:
    - Understand any language (Roman Urdu, Urdu, Hindi, English). Always reply in polished, fluent English.
    - Never sound like a robotic canned script. Be consultative, human-like, and professional.`;
 
-    // Construct valid alternating conversation history
+  // 1. Ultra-Fast Groq Engine (Qwen 3.8 / Llama on Groq LPU)
+  async function callGroqDirect(prompt, apiKey) {
+    const key = apiKey || DEFAULT_GROQ_KEY;
+    const url = 'https://api.groq.com/openai/v1/chat/completions';
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: 'Hello' },
+      { role: 'assistant', content: 'Hi! Welcome to AddizTech. How can I help with your website, brand, e-commerce store or custom digital project today?' }
+    ];
+
+    const pastHistory = conversationHistory.slice(0, -1).slice(-6);
+    for (const msg of pastHistory) {
+      messages.push({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.text
+      });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'qwen/qwen3.8-27b',
+          messages: messages,
+          max_tokens: 800,
+          temperature: 0.6
+        })
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content?.trim();
+        if (text && text.length > 5) return text;
+      }
+    } catch (e) {
+      clearTimeout(timeout);
+      console.warn('Groq failed, fallback to Gemini:', e.message);
+    }
+    return null;
+  }
+
+  // 2. Google Gemini Fallback Engine
+  async function callGeminiDirect(prompt, apiKey) {
+    const key = apiKey || DEFAULT_GEMINI_KEY;
+    const models = ['models/gemini-3.5-flash-lite', 'models/gemini-3.5-flash'];
+
     const contents = [
       { role: 'user', parts: [{ text: 'Hello' }] },
       { role: 'model', parts: [{ text: 'Hi! Welcome to AddizTech. How can I help with your website, brand, e-commerce store or custom digital project today?' }] }
@@ -454,11 +505,10 @@ Core Guidelines:
     }
     contents.push({ role: 'user', parts: [{ text: prompt }] });
 
-    // Try models in order of speed and stability
     for (const model of models) {
       const url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`;
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 18000);
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
       try {
         const res = await fetch(url, {
@@ -466,48 +516,39 @@ Core Guidelines:
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: systemPrompt }]
-            },
+            systemInstruction: { parts: [{ text: systemPrompt }] },
             contents: contents,
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 1000
-            }
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
           })
         });
         clearTimeout(timeout);
         if (res.ok) {
           const data = await res.json();
           const answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-          if (answer && answer.length > 5) {
-            return answer;
-          }
+          if (answer && answer.length > 5) return answer;
         }
       } catch (e) {
         clearTimeout(timeout);
-        console.warn(`Model ${model} failed, trying next:`, e.message);
       }
     }
-
-    throw new Error('All AI models unavailable');
+    return null;
   }
 
-  // Primary Generator: 100% Dynamic Gemini AI on Every Single Message
+  // Primary Generator: Dual Ultra-Fast AI on Every Single Message
   async function generateAIAnswer(userPrompt) {
-    const activeKey = localStorage.getItem('cb_gemini_key') || DEFAULT_GEMINI_KEY;
-    if (activeKey && activeKey.trim().length > 10) {
-      try {
-        const geminiAnswer = await callGeminiDirect(userPrompt, activeKey.trim());
-        if (geminiAnswer && geminiAnswer.length > 5) {
-          return geminiAnswer;
-        }
-      } catch (e) {
-        console.warn('Gemini error:', e);
-      }
-    }
+    // 1. Try Groq First (Instant, 0 Latency)
+    try {
+      const groqAnswer = await callGroqDirect(userPrompt);
+      if (groqAnswer && groqAnswer.length > 5) return groqAnswer;
+    } catch (e) {}
 
-    // Dynamic Intelligent Fallback if completely offline
+    // 2. Try Gemini Backup
+    try {
+      const geminiAnswer = await callGeminiDirect(userPrompt);
+      if (geminiAnswer && geminiAnswer.length > 5) return geminiAnswer;
+    } catch (e) {}
+
+    // 3. Dynamic Intelligent Fallback if completely offline
     const lower = userPrompt.toLowerCase();
     if (lower.includes('website') || lower.includes('process') || lower.includes('developer') || lower.includes('build')) {
       return "Building a website typically involves 4 core phases: 1) Planning & Wireframing (defining project goals and sitemap), 2) UI/UX Design (visual layouts and branding), 3) Full-Stack Development (coding frontend, backend, and features), and 4) QA Testing & Launch. When preparing for your developer, define your target audience, desired features, brand assets, and reference sites. At AddizTech, we manage this entire process for you to create high-converting websites—connect with our team at https://addiztech.com/contact-us/ to start your project!";
